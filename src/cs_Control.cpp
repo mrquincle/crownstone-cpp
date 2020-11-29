@@ -173,9 +173,7 @@ done:
 
 					assert(sizeof(control_packet) == 16 + 4);
 					
-					cout << pkt->type << endl;
-
-					AES_ECB_encrypt(&ctx, data + 4);
+					AES_CTR_xcrypt_buffer(&ctx, data + 4, 16);
 
 					characteristic.write_command(data, 16 + 4);
 				}
