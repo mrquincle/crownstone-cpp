@@ -54,22 +54,22 @@ int main(int argc, char **argv)
 		cout << "Key should be present and have 16 digits (size = " << key_s.size() << ")" << endl;
 		return 1;
 	}
-	uint8_t key[16], key_s0, key_s1;
-	for (int i = 0; i < 32; i+=2) { 
-		if (key_s[i] > 0x60) {
-			key_s0 = key_s[i] - 0x61 + 10;
-		} else {
-			key_s0 = key_s[i] - 0x30;
-		}
-		if (key_s[i+1] > 0x60) {
-			key_s1 = key_s[i+1] - 0x61 + 10;
-		} else {
-			key_s1 = key_s[i+1] - 0x30;
-		}
-		key[i/2] = (key_s0 << 4) + key_s1;
-		//cout << to_hex(key[i]);
-	} 
-	//cout << endl;
+
+	uint8_t key[16] = {};
+	std::stringstream ss;
+
+	for(int i = 0; i < key_s.size(); i+=2) {
+		ss << std::hex << key_s.substr(i,2);
+		int byte;
+		ss >> byte;
+		key[i/2] = byte & 0xFF;
+		ss.str(std::string());
+		ss.clear();
+	}
+	for (int i = 0; i < 16; i++) {
+		cout << to_hex(key[i]);
+	}
+	cout << endl;
 
 	BLEGATTStateMachine gatt;
 
@@ -93,8 +93,17 @@ int main(int argc, char **argv)
 						uint8_t data[16];
 						memset(data, 0, 16);
 						memcpy(data, val.first, len);
+						
+						cout << "Encrypted data: ";
+						cout << setfill('0');
+						for (int i = 0; i < len; ++i) {
+							cout << std::hex << setw(2) << (int)data[i] << ' ';
+						}
+						cout << endl;
+
 						AES_ECB_decrypt(&ctx, data);
 						
+						cout << "Decrypted data: ";
 						cout << setfill('0');
 						for (int i = 0; i < len; ++i) {
 							cout << std::hex << setw(2) << (int)data[i] << ' ';
